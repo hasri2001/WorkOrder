@@ -1,0 +1,604 @@
+{
+	"info": {
+		"_postman_id": "work-order-api-collection",
+		"name": "Work Order Management API",
+		"description": "Complete API collection for Work Order Management System with JWT authentication and RBAC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						},
+						"description": "Check API health status (no authentication required)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login as Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('authToken', jsonData.accessToken);",
+									"    console.log('Token saved:', jsonData.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login as Admin user. Token will be automatically saved to environment."
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Manager",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('authToken', jsonData.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"manager@example.com\",\n  \"password\": \"Manager123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login as Manager user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Operator",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('authToken', jsonData.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"operator@example.com\",\n  \"password\": \"Operator123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login as Operator user"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Work Orders",
+			"item": [
+				{
+					"name": "List All Work Orders",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/work-orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders"]
+						},
+						"description": "Get all work orders (Operators only see assigned ones)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Work Orders with Filters",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/work-orders?status=PENDING&priority=HIGH&page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders"],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING",
+									"description": "PENDING, APPROVED, IN_PROGRESS, COMPLETED, REJECTED"
+								},
+								{
+									"key": "priority",
+									"value": "HIGH",
+									"description": "LOW, MEDIUM, HIGH"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "network",
+									"disabled": true
+								},
+								{
+									"key": "assignedToUserId",
+									"value": "3",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Filter work orders by status, priority, search term, etc."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Work Order by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "1"]
+						},
+						"description": "Get a single work order by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Work Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Upgrade server RAM\",\n  \"description\": \"Increase RAM from 16GB to 32GB on production server\",\n  \"priority\": \"HIGH\",\n  \"assignedToUserId\": 3,\n  \"dueDate\": \"2026-02-20\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/work-orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders"]
+						},
+						"description": "Create a new work order (Admin/Manager only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Work Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Fix network issue - UPDATED\",\n  \"priority\": \"MEDIUM\",\n  \"dueDate\": \"2026-02-18\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "1"]
+						},
+						"description": "Update work order details (Admin/Manager only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Work Order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/2",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "2"]
+						},
+						"description": "Delete a work order (Admin/Manager only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Work Order Status",
+			"item": [
+				{
+					"name": "Change Status to APPROVED",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newStatus\": \"APPROVED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/1/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "1", "status"]
+						},
+						"description": "Approve a pending work order (Admin/Manager only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Status to IN_PROGRESS",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newStatus\": \"IN_PROGRESS\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/1/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "1", "status"]
+						},
+						"description": "Start work on an approved order"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Status to COMPLETED",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newStatus\": \"COMPLETED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/1/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "1", "status"]
+						},
+						"description": "Mark work order as completed"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Status to REJECTED",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newStatus\": \"REJECTED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/1/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "1", "status"]
+						},
+						"description": "Reject a work order"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Audit Logs",
+			"item": [
+				{
+					"name": "Get Work Order Logs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/work-orders/1/logs",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-orders", "1", "logs"]
+						},
+						"description": "Get audit logs for a specific work order (Admin/Manager only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Logs via Audit Endpoint",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/work-order-logs?workOrderId=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["work-order-logs"],
+							"query": [
+								{
+									"key": "workOrderId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Alternative endpoint to get logs (Admin/Manager only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Create User (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"New Operator\",\n  \"email\": \"newop@example.com\",\n  \"password\": \"NewOp123!\",\n  \"role\": \"OPERATOR\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["users"]
+						},
+						"description": "Create a new user (Admin only). Role can be ADMIN, MANAGER, or OPERATOR"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
